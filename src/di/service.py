@@ -1,7 +1,9 @@
 from dishka import Provider, Scope, provide
+from src.repositories.sqlalchemy.booking import BookingRepository
 from src.repositories.sqlalchemy.transaction import SQLAlchemyTransaction
 from src.repositories.sqlalchemy.user import UserRepository
 from src.services.auth import AuthService
+from src.services.bookings import BookingsService
 
 
 
@@ -17,3 +19,10 @@ class ServiceProvider(Provider):
             user_repo=user_repo,
             sqlalchemy_transaction=sqlalchemy_transaction
         )
+
+    @provide(scope=Scope.REQUEST)
+    def booking_service(
+        self,
+        repo: BookingRepository
+    ) -> BookingsService:
+        return BookingsService(repo=repo)

@@ -13,7 +13,7 @@ from src.core.config import settings
 class SQLAlchemyProvider(Provider):
     @provide(scope=Scope.APP)
     def engine(self) -> AsyncEngine:
-        return create_async_engine(settings._postgres_url)
+        return create_async_engine(settings.POSTGRES_URL)
 
     @provide(scope=Scope.APP)
     def session_factory(

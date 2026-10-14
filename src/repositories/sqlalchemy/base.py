@@ -1,6 +1,10 @@
-from typing import Generic, Sequence, TypeVar
+from typing import Generic, Sequence, TypeVar, get_type_hints
 import uuid
-
+import inspect
+from typing import Any
+from uuid import UUID
+from sqlalchemy import inspect as sa_inspect
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Select, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.base import ExecutableOption
@@ -67,3 +71,4 @@ class BaseSQLAlchemyRepository[M: Base]:
     async def all(self) -> list[M]:
         result = await self.session.execute(select(self.model))
         return list(result.scalars().all())
+    

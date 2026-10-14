@@ -6,12 +6,10 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from src.models.base import Base
 from src.models.office import Office
-from src.models.meeting import Meeting
 from src.models.meeting_room import MeetingRoom
 from src.models.booking import Booking
-from src.models.employee import Employee
 from src.models.user import User
-from src.models.visit import Visit
+from src.models.participant import Participant
 
 from alembic import context
 from src.core.config import settings

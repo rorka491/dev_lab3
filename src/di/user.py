@@ -11,7 +11,7 @@ from src.repositories.sqlalchemy.user import UserRepository
 
 class UserProvider(Provider):
     @provide(scope=Scope.REQUEST)
-    async def get_user_id(self, request: Request) -> UUID:
+    async def user_id(self, request: Request) -> UUID:
         authorization = request.headers.get("Authorization")
         if authorization is None or not authorization.startswith("Bearer "):
             raise HTTPException(

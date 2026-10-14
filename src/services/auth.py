@@ -1,4 +1,6 @@
 from uuid import UUID
+
+from sqlalchemy.exc import IntegrityError
 from src.exceptions import InvalidCredentialsError, UsernameAlreadyExistsError
 from src.repositories.sqlalchemy.transaction import SQLAlchemyTransaction
 from src.repositories.sqlalchemy.user import UserRepository
@@ -21,7 +23,10 @@ class AuthService:
 
     async def register(self, data: UserRegister) -> User:
         async with self.sqlalchemy_transaction:
-            user = await self.user_repo.create(data)
+            try:
+                user = await self.user_repo.create(data)
+            except IntegrityError:
+                raise UsernameAlreadyExistsError
         return user
 
     async def login(self, data: UserLogin) -> str:

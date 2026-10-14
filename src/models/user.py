@@ -1,7 +1,9 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models.base import Base
 from src.enums import UserRole
+
 
 class User(Base):
     __tablename__ = "users"
