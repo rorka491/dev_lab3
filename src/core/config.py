@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     JWT_SECRET_KEY: str
 
-    POSTGRES_NAME: str = "postgres"
+    POSTGRES_DB: str = "postgres"
     POSTGRES_PORT: int = 5432
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PASSWORD: str = "postgres"
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     @property
     def _postgres_url(self) -> str:
-        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_NAME}"
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
 
 

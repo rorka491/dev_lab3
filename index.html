@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meetly — система бронирования</title>
+
+    <style>
+        :root {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #20243a;
+            background: #f6f7fb;
+            --primary: #594ce0;
+            --primary-hover: #4538c8;
+            --surface: #fff;
+            --border: #e8eaf2;
+            --muted: #858ba0;
+            --success: #16835d;
+            --danger: #d84646;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-width: 320px;
+            min-height: 100vh;
+        }
+
+        button, input, select { font: inherit; }
+        button { cursor: pointer; }
+        button:disabled { opacity: .5; cursor: not-allowed; }
+
+        .hidden { display: none !important; }
+
+        .login-page {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .login-card {
+            background: var(--surface);
+            width: min(100%, 420px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 15px 50px #25254a0a;
+        }
+
+        .brand {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        .brand span { color: var(--primary); }
+
+        .muted { color: var(--muted); }
+        .small { font-size: 12px; }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin: 16px 0;
+        }
+
+        .field label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #dfe2ed;
+            border-radius: 9px;
+            background: white;
+            color: #20243a;
+            min-width: 0;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid #594ce033;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 9px;
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: .15s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-secondary {
+            background: #f0efff;
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: #fff0f0;
+            color: var(--danger);
+        }
+
+        .btn-plain {
+            background: white;
+            border: 1px solid var(--border);
+            color: #424861;
+        }
+
+        .full-width { width: 100%; }
+
+        .app-layout {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 245px minmax(0, 1fr);
+        }
+
+        .sidebar {
+            background: white;
+            border-right: 1px solid var(--border);
+            padding: 24px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .sidebar .brand { padding: 0 12px; }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav button {
+            border: 0;
+            border-radius: 9px;
+            padding: 12px;
+            background: transparent;
+            color: #646b82;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .nav button:hover { background: #f7f7fc; }
+
+        .nav button.active {
+            background: #f0efff;
+            color: var(--primary);
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding: 18px 8px 0;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 5px;
+            margin-bottom: 14px;
+        }
+
+        .main {
+            min-width: 0;
+            padding: 30px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            font-size: clamp(22px, 3vw, 30px);
+            letter-spacing: -1px;
+            margin: 0 0 7px;
+        }
+
+        h2 { font-size: 17px; margin: 0; }
+        h3 { font-size: 14px; margin: 0; }
+
+        .page-subtitle {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toolbar input, .toolbar select { width: auto; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card, .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 13px;
+        }
+
+        .stat-card { padding: 20px; }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 800;
+            margin-top: 12px;
+            letter-spacing: -1px;
+        }
+
+        .panel { padding: 20px; margin-bottom: 20px; }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #f0f1f6;
+            vertical-align: middle;
+        }
+
+        tbody tr:last-child td { border-bottom: 0; }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-pending { color: #966800; background: #fff5d8; }
+        .badge-approved, .badge-present { color: #147a53; background: #e3f7ed; }
+        .badge-cancel, .badge-absent { color: #bd3b3b; background: #ffebeb; }
+        .badge-neutral { color: #636b80; background: #f0f1f6; }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .row-actions .btn { padding: 7px 9px; }
+
+        .empty-state {
+            padding: 35px 10px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0 16px;
+        }
+
+        .form-grid .field { margin: 8px 0 14px; }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .notice {
+            border-radius: 9px;
+            padding: 12px;
+            font-size: 13px;
+            margin: 12px 0;
+        }
+
+        .notice-error { background: #fff0f0; color: #b52d2d; }
+        .notice-info { background: #f0efff; color: #5146c9; }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: #171a2b77;
+            z-index: 10;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal {
+            width: min(100%, 540px);
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .close-btn {
+            background: #f3f4f8;
+            border: 0;
+            border-radius: 8px;
+            padding: 8px 11px;
+        }
+
+        #toast-container {
+            position: fixed;
+            z-index: 20;
+            bottom: 20px;
+            right: 20px;
+            display: grid;
+            gap: 8px;
+            max-width: min(400px, calc(100vw - 40px));
+        }
+
+        .toast {
+            background: #22263a;
+            color: white;
+            padding: 13px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            box-shadow: 0 5px 25px #0002;
+        }
+
+        .api-settings {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .api-settings input { font-size: 12px; }
+
+        .loading {
+            padding: 30px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .app-layout { grid-template-columns: 190px minmax(0, 1fr); }
+            .main { padding: 22px; }
+            .stats { gap: 10px; }
+            .stat-card { padding: 15px; }
+        }
+
+        @media (max-width: 650px) {
+            .app-layout { display: block; }
+
+            .sidebar {
+                padding: 14px;
+                gap: 12px;
+                border-right: 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .sidebar .brand { padding: 0 4px; }
+
+            .nav {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 3px;
+            }
+
+            .nav button { white-space: nowrap; padding: 10px; }
+
+            .sidebar-bottom {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 4px 0;
+            }
+
+            .user-role { margin: 4px 0 0; }
+            .sidebar-bottom .btn { margin-left: auto; }
+            .main { padding: 20px 14px; }
+            .topbar { align-items: flex-start; }
+            .stats { grid-template-columns: 1fr; }
+            .stat-value { font-size: 25px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .panel { padding: 14px; }
+            .toolbar { width: 100%; }
+            .toolbar input, .toolbar select { flex: 1; min-width: 0; }
+        }
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <section class="login-page">
+        <div class="login-card">
+            <div class="brand">Meet<span>ly</span></div>
+            <p class="muted">Подключение к системе бронирования переговорных</p>
+            <div class="loading">Загрузка...</div>
+        </div>
+    </section>
+</div>
+
+<div id="toast-container" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/*
+ * Настройки:
+ * 1. Если frontend и backend находятся на разных адресах,
+ *    укажи здесь базовый URL FastAPI.
+ * 2. В URL не нужно добавлять /api/v1.
+ */
+const DEFAULT_API_URL = "http://127.0.0.1:8000";
+
+const API = {
+    baseUrl: localStorage.getItem("meetly_api_url") || DEFAULT_API_URL,
+    token: localStorage.getItem("meetly_token"),
+    user: null
+};
+
+const state = {
+    page: "dashboard",
+    bookings: [],
+    rooms: [],
+    offices: [],
+    employees: [],
+    bookingPage: 1,
+    bookingSize: 50,
+    bookingStatus: "",
+    bookingTotal: 0,
+    bookingPages: 0,
+    loading: false
+};
+
+const ROLE_LABELS = {
+    supervisor: "Руководитель",
+    subordinate: "Подчинённый",
+    admin: "Администратор"
+};
+
+const BOOKING_STATUS = {
+    pending: "Ожидает подтверждения",
+    approved: "Подтверждено",
+    cancel: "Отменено"
+};
+
+const PARTICIPANT_STATUS = {
+    pending: "Ожидает",
+    present: "Присутствует",
+    absent: "Отсутствует"
+};
+
+const $ = (selector, root = document) => root.querySelector(selector);
+
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[char]);
+}
+
+function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+
+    return new Intl.DateTimeFormat("ru-RU", {
+        dateStyle: "short",
+        timeStyle: "short"
+    }).format(date);
+}
+
+function formatTime(value) {
+    return value ? String(value).slice(0, 5) : "—";
+}
+
+function statusBadge(status) {
+    const css = {
+        pending: "badge-pending",
+        approved: "badge-approved",
+        cancel: "badge-cancel",
+        present: "badge-present",
+        absent: "badge-absent"
+    }[status] || "badge-neutral";
+
+    return `<span class="badge ${css}">${escapeHtml(
+        BOOKING_STATUS[status] || PARTICIPANT_STATUS[status] || status || "Неизвестно"
+    )}</span>`;
+}
+
+function toast(message) {
+    const container = $("#toast-container");
+    const element = document.createElement("div");
+    element.className = "toast";
+    element.textContent = message;
+    container.append(element);
+    setTimeout(() => element.remove(), 4000);
+}
+
+function showError(message) {
+    return `<div class="notice notice-error">${escapeHtml(message)}</div>`;
+}
+
+function showInfo(message) {
+    return `<div class="notice notice-info">${escapeHtml(message)}</div>`;
+}
+
+function isSupervisor() {
+    return ["supervisor", "admin"].includes(API.user?.role);
+}
+
+function requireSupervisor() {
+    if (!isSupervisor()) {
+        toast("Эта операция доступна только руководителю.");
+        return false;
+    }
+    return true;
+}
+
+/* -------------------- HTTP-клиент -------------------- */
+
+async function request(path, options = {}) {
+    const headers = new Headers(options.headers || {});
+
+    if (API.token) {
+        headers.set("Authorization", `Bearer ${API.token}`);
+    }
+
+    if (options.body !== undefined) {
+        headers.set("Content-Type", "application/json");
+    }
+
+    let response;
+
+    try {
+        response = await fetch(
+            `${API.baseUrl.replace(/\/+$/, "")}${path}`,
+            { ...options, headers }
+        );
+    } catch {
+        throw new Error(
+            `Не удалось подключиться к API (${API.baseUrl}). Проверь адрес сервера и CORS.`
+        );
+    }
+
+    if (response.status === 401) {
+        API.token = null;
+        API.user = null;
+        localStorage.removeItem("meetly_token");
+        renderLogin("Сессия завершена. Войдите снова.");
+        throw new Error("Требуется авторизация.");
+    }
+
+    if (!response.ok) {
+        let message = `Ошибка HTTP ${response.status}`;
+
+        try {
+            const data = await response.json();
+
+            if (typeof data.detail === "string") {
+                message = data.detail;
+            } else if (Array.isArray(data.detail)) {
+                message = data.detail
+                    .map(item => {
+                        const location = Array.isArray(item.loc)
+                            ? item.loc.join(".")
+                            : "";
+                        return `${location}: ${item.msg}`;
+                    })
+                    .join("; ");
+            } else if (data.detail) {
+                message = JSON.stringify(data.detail);
+            }
+        } catch {
+            // Ответ сервера не содержит JSON.
+        }
+
+        throw new Error(message);
+    }
+
+    if (response.status === 204) return null;
+
+    const text = await response.text();
+    if (!text) return null;
+
+    try {
+        return JSON.parse(text);
+    } catch {
+        return text;
+    }
+}
+
+const api = {
+    login: data => request("/api/v1/auth/login", {
+        method: "POST",
+        body: JSON.stringify(data)
+    }),
+
+    register: data => request("/api/v1/auth/register", {
+        method: "POST",
+        body: JSON.stringify(data)
+    }),
+
+    me: () => request("/api/v1/auth/me"),
+
+    bookings: (page = 1, size = 50, status = "") => {
+        const params = new URLSearchParams({
+            page: String(page),
+            size: String(size)
+        });
+
+        if (status) params.set("status", status);
+
+        return request(`/api/v1/bookings?${params}`);
+    },
+
+    createBooking: data => request("/api/v1/bookings", {
+        method: "POST",
+        body: JSON.stringify(data)
+    }),
+
+    updateBooking: (id, data) => request(`/api/v1/bookings/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data)
+    }),
+
+    rooms: () => request("/api/v1/meeting-rooms?offset=0&limit=100"),
+    offices: () => request("/api/v1/offices?offset=0&limit=100"),
+    employees: () => request("/api/v1/users?offset=0&limit=100"),
+
+    createRoom: data => request("/api/v1/meeting-rooms", {
+        method: "POST",
+        body: JSON.stringify(data)
+    }),
+
+    updateRoom: (id, data) => request(`/api/v1/meeting-rooms/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data)
+    }),
+
+    deleteRoom: id => request(`/api/v1/meeting-rooms/${id}`, {
+        method: "DELETE"
+    }),
+
+    createOffice: data => request("/api/v1/offices", {
+        method: "POST",
+        body: JSON.stringify(data)
+    }),
+
+    updateOffice: (id, data) => request(`/api/v1/offices/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data)
+    }),
+
+    deleteOffice: id => request(`/api/v1/offices/${id}`, {
+        method: "DELETE"
+    }),
+
+    deleteEmployee: id => request(`/api/v1/users/${id}`, {
+        method: "DELETE"
+    })
+};
+
+/*
+ * Универсально разбираем варианты ответа:
+ * - массив;
+ * - объект с items;
+ * - объект с data.
+ *
+ * Если API возвращает иной формат, его нужно адаптировать здесь.
+ */
+function unwrapList(data) {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+}
+
+/* -------------------- Авторизация -------------------- */
+
+function renderLogin(error = "") {
+    $("#app").innerHTML = `
+        <section class="login-page">
+            <div class="login-card">
+                <div class="brand">Meet<span>ly</span></div>
+                <p class="muted">Система бронирования переговорных</p>
+
+                ${error ? showError(error) : ""}
+
+                <form id="api-config-form">
+                    <div class="field">
+                        <label for="api-url">Адрес API</label>
+                        <input id="api-url" type="url"
+                            value="${escapeHtml(API.baseUrl)}"
+                            placeholder="http://127.0.0.1:8000"
+                            required>
+                    </div>
+                    <button class="btn btn-plain full-width" type="submit">
+                        Сохранить адрес API
+                    </button>
+                </form>
+
+                <form id="login-form">
+                    <div class="field">
+                        <label for="username">Логин</label>
+                        <input id="username" name="username"
+                            autocomplete="username" required minlength="3">
+                    </div>
+
+                    <div class="field">
+                        <label for="password">Пароль</label>
+                        <input id="password" name="password" type="password"
+                            autocomplete="current-password" required>
+                    </div>
+
+                    <button class="btn btn-primary full-width" type="submit">
+                        Войти
+                    </button>
+                </form>
+
+                <p class="muted small">
+                    Роль определяется сервером после авторизации.
+                </p>
+            </div>
+        </section>
+    `;
+
+    $("#api-config-form").addEventListener("submit", event => {
+        event.preventDefault();
+
+        API.baseUrl = $("#api-url").value.trim().replace(/\/+$/, "");
+        localStorage.setItem("meetly_api_url", API.baseUrl);
+        toast("Адрес API сохранён.");
+    });
+
+    $("#login-form").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const button = event.submitter;
+        button.disabled = true;
+        button.textContent = "Входим...";
+
+        try {
+            const form = new FormData(event.currentTarget);
+            const data = await api.login({
+                username: form.get("username"),
+                password: form.get("password")
+            });
+
+            if (!data?.access_token) {
+                throw new Error("API не вернул access_token.");
+            }
+
+            API.token = data.access_token;
+            localStorage.setItem("meetly_token", API.token);
+
+            API.user = await api.me();
+            await startApplication();
+        } catch (error) {
+            if (API.token && !API.user) {
+                API.token = null;
+                localStorage.removeItem("meetly_token");
+            }
+
+            renderLogin(error.message);
+        }
+    });
+}
+
+function logout() {
+    API.token = null;
+    API.user = null;
+    localStorage.removeItem("meetly_token");
+    state.page = "dashboard";
+    renderLogin();
+}
+
+/* -------------------- Основной интерфейс -------------------- */
+
+function navigationItems() {
+    const items = [
+        ["dashboard", "⌂", "Обзор"],
+        ["bookings", "▦", "Бронирования"],
+        ["rooms", "▤", "Переговорные"]
+    ];
+
+    if (isSupervisor()) {
+        items.push(
+            ["offices", "▥", "Офисы"],
+            ["employees", "♙", "Сотрудники"]
+        );
+    }
+
+    return items;
+}
+
+function renderShell() {
+    $("#app").innerHTML = `
+        <div class="app-layout">
+            <aside class="sidebar">
+                <div class="brand">Meet<span>ly</span></div>
+
+                <nav class="nav" id="navigation" aria-label="Основная навигация">
+                    ${navigationItems().map(([id, icon, label]) => `
+                        <button type="button" data-page="${id}"
+                            class="${state.page === id ? "active" : ""}">
+                            <span aria-hidden="true">${icon}</span>
+                            &nbsp; ${label}
+                        </button>
+                    `).join("")}
+                </nav>
+
+                <div class="sidebar-bottom">
+                    <div>
+                        <div class="user-name">${escapeHtml(API.user.username)}</div>
+                        <div class="user-role">${escapeHtml(
+                            ROLE_LABELS[API.user.role] || API.user.role
+                        )}</div>
+                    </div>
+                    <button class="btn btn-plain" id="logout-button" type="button">
+                        Выйти
+                    </button>
+                </div>
+            </aside>
+
+            <main class="main">
+                <div id="page-content">
+                    <div class="loading">Загрузка...</div>
+                </div>
+            </main>
+        </div>
+
+        <div id="modal-root"></div>
+    `;
+
+    $("#navigation").addEventListener("click", event => {
+        const button = event.target.closest("[data-page]");
+        if (!button) return;
+
+        const page = button.dataset.page;
+
+        if (["offices", "employees"].includes(page) && !isSupervisor()) {
+            toast("Недостаточно прав.");
+            return;
+        }
+
+        state.page = page;
+        renderShell();
+        renderCurrentPage();
+    });
+
+    $("#logout-button").addEventListener("click", logout);
+}
+
+function pageHeading(title, subtitle, action = "") {
+    return `
+        <header class="topbar">
+            <div>
+                <h1>${escapeHtml(title)}</h1>
+                <div class="page-subtitle">${escapeHtml(subtitle)}</div>
+            </div>
+            ${action}
+        </header>
+    `;
+}
+
+function statCard(label, value) {
+    return `
+        <article class="stat-card">
+            <div class="stat-label">${escapeHtml(label)}</div>
+            <div class="stat-value">${value}</div>
+        </article>
+    `;
+}
+
+function tableOrEmpty(headers, rows, emptyText = "Нет данных") {
+    if (!rows.length) {
+        return `<div class="empty-state">${escapeHtml(emptyText)}</div>`;
+    }
+
+    return `
+        <div class="table-wrap">
+            <table>
+                <thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+                <tbody>${rows.join("")}</tbody>
+            </table>
+        </div>
+    `;
+}
+
+async function loadBookings() {
+    const result = await api.bookings(
+        state.bookingPage,
+        state.bookingSize,
+        state.bookingStatus
+    );
+
+    state.bookings = unwrapList(result);
+    state.bookingTotal = Number(result?.total ?? state.bookings.length);
+    state.bookingPages = Number(
+        result?.pages ?? Math.ceil(state.bookingTotal / state.bookingSize)
+    );
+}
+
+async function loadRooms() {
+    state.rooms = unwrapList(await api.rooms());
+}
+
+async function loadOffices() {
+    state.offices = unwrapList(await api.offices());
+}
+
+async function loadEmployees() {
+    state.employees = unwrapList(await api.employees());
+}
+
+async function renderCurrentPage() {
+    const root = $("#page-content");
+    if (!root) return;
+
+    root.innerHTML = `<div class="loading">Загрузка данных...</div>`;
+
+    try {
+        if (state.page === "dashboard") {
+            await Promise.all([
+                loadBookings(),
+                loadRooms(),
+                loadOffices()
+            ]);
+
+            renderDashboard();
+        } else if (state.page === "bookings") {
+            await Promise.all([loadBookings(), loadRooms(), loadEmployees()]);
+            renderBookings();
+        } else if (state.page === "rooms") {
+            await Promise.all([loadRooms(), loadOffices()]);
+            renderRooms();
+        } else if (state.page === "offices") {
+            if (!requireSupervisor()) return;
+            await loadOffices();
+            renderOffices();
+        } else if (state.page === "employees") {
+            if (!requireSupervisor()) return;
+            await loadEmployees();
+            renderEmployees();
+        }
+    } catch (error) {
+        root.innerHTML = `
+            <h1>Не удалось загрузить данные</h1>
+            ${showError(error.message)}
+            <button class="btn btn-primary" id="retry-button" type="button">
+                Повторить
+            </button>
+        `;
+
+        $("#retry-button").addEventListener("click", renderCurrentPage);
+    }
+}
+
+/* -------------------- Обзор -------------------- */
+
+function renderDashboard() {
+    const root = $("#page-content");
+
+    const pending = state.bookings.filter(
+        booking => booking.status === "pending"
+    ).length;
+
+    const title = isSupervisor() ? "Обзор системы" : "Мой рабочий кабинет";
+
+    const rows = state.bookings.slice(0, 6).map(booking => `
+        <tr>
+            <td>
+                <strong>${escapeHtml(
+                    booking.meeting_room?.name || "Переговорная"
+                )}</strong>
+            </td>
+            <td>${escapeHtml(
+                (booking.participants || []).map(p => p.user?.username).filter(Boolean).join(", ")
+                || "—"
+            )}</td>
+            <td>${escapeHtml(formatDate(booking.starts_at))}</td>
+            <td>${statusBadge(booking.status || "pending")}</td>
+        </tr>
+    `);
+
+    root.innerHTML = `
+        ${pageHeading(
+            title,
+            `Здравствуйте, ${API.user.username}. Вот актуальная информация.`,
+            `<button class="btn btn-primary" id="quick-booking" type="button">
+                + Создать бронирование
+            </button>`
+        )}
+
+        <section class="stats">
+            ${statCard("Всего бронирований", state.bookingTotal)}
+            ${statCard("Ожидают подтверждения", pending)}
+            ${statCard("Переговорных", state.rooms.length)}
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Последние бронирования</h2>
+                <button class="btn btn-plain" id="all-bookings" type="button">
+                    Все бронирования
+                </button>
+            </div>
+
+            ${tableOrEmpty(
+                ["Переговорная", "Участники", "Начало", "Статус"],
+                rows,
+                "Пока нет бронирований."
+            )}
+        </section>
+
+        <section class="panel">
+            <div class="panel-header"><h2>Доступные разделы</h2></div>
+            <p class="muted">
+                ${isSupervisor()
+                    ? "Управляйте бронированиями, переговорными, офисами и сотрудниками."
+                    : "Просматривайте переговорные и создавайте бронирования для рабочих встреч."}
+            </p>
+        </section>
+    `;
+
+    $("#quick-booking").addEventListener("click", () => openBookingModal());
+    $("#all-bookings").addEventListener("click", () => navigate("bookings"));
+}
+
+/* -------------------- Бронирования -------------------- */
+
+function navigate(page) {
+    state.page = page;
+    renderShell();
+    renderCurrentPage();
+}
+
+function renderBookings() {
+    const root = $("#page-content");
+
+    const rows = state.bookings.map(booking => {
+        const participants = (booking.participants || [])
+            .map(p => p.user?.username || p.user_id)
+            .join(", ");
+
+        const status = booking.status || "pending";
+
+        const actions = isSupervisor()
+            ? `
+                <div class="row-actions">
+                    ${status === "pending" ? `
+                        <button
+                            class="btn btn-primary"
+                            type="button"
+                            data-approve-booking="${escapeHtml(booking.id)}">
+                            Подтвердить
+                        </button>
+                    ` : ""}
+
+                    ${["pending", "approved"].includes(status) ? `
+                        <button
+                            class="btn btn-danger"
+                            type="button"
+                            data-cancel-booking="${escapeHtml(booking.id)}">
+                            Отменить
+                        </button>
+                    ` : ""}
+                </div>
+            `
+            : "";
+
+        return `
+            <tr>
+                <td>
+                    <strong>${escapeHtml(
+                        booking.meeting_room?.name || "Переговорная"
+                    )}</strong>
+                    <div class="muted small">${escapeHtml(
+                        booking.id.slice(0, 8)
+                    )}</div>
+                </td>
+                <td>${escapeHtml(participants || "—")}</td>
+                <td>${escapeHtml(formatDate(booking.starts_at))}</td>
+                <td>${escapeHtml(formatDate(booking.ends_at))}</td>
+                <td>${statusBadge(status)}</td>
+                <td>
+                    <div class="row-actions">
+                        <button
+                            class="btn btn-plain"
+                            type="button"
+                            data-booking-details="${escapeHtml(booking.id)}">
+                            Подробнее
+                        </button>
+                        ${actions}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    root.innerHTML = `
+        ${pageHeading(
+            "Бронирования",
+            "Просмотр встреч и создание новых бронирований.",
+            `<button class="btn btn-primary" id="create-booking" type="button">
+                + Новое бронирование
+            </button>`
+        )}
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Список бронирований</h2>
+                <div class="toolbar">
+                    <select id="booking-status" aria-label="Фильтр по статусу">
+                        <option value="">Все статусы</option>
+                        <option value="pending">Ожидают подтверждения</option>
+                        <option value="approved">Подтверждены</option>
+                        <option value="cancel">Отменены</option>
+                    </select>
+                    <button class="btn btn-plain" id="refresh-bookings" type="button">
+                        Обновить
+                    </button>
+                </div>
+            </div>
+
+            ${tableOrEmpty(
+                [
+                    "Переговорная",
+                    "Участники",
+                    "Начало",
+                    "Окончание",
+                    "Статус",
+                    "Действия"
+                ],
+                rows,
+                "Бронирования не найдены."
+            )}
+
+            <div class="panel-header" style="margin-top:16px;margin-bottom:0">
+                <span class="muted small">Всего: ${state.bookingTotal}</span>
+                <div class="toolbar">
+                    <button
+                        class="btn btn-plain"
+                        id="prev-page"
+                        ${state.bookingPage <= 1 ? "disabled" : ""}
+                        type="button">
+                        ← Назад
+                    </button>
+
+                    <span class="muted small">
+                        Страница ${state.bookingPage} из ${Math.max(state.bookingPages, 1)}
+                    </span>
+
+                    <button
+                        class="btn btn-plain"
+                        id="next-page"
+                        ${state.bookingPage >= state.bookingPages ? "disabled" : ""}
+                        type="button">
+                        Далее →
+                    </button>
+                </div>
+            </div>
+        </section>
+    `;
+
+    // Фильтрация
+    $("#booking-status").value = state.bookingStatus;
+
+    $("#booking-status").addEventListener("change", async event => {
+        state.bookingStatus = event.target.value;
+        state.bookingPage = 1;
+        await refreshCurrentPage();
+    });
+
+    // Обновление списка
+    $("#refresh-bookings").addEventListener("click", refreshCurrentPage);
+
+    // Создание бронирования
+    $("#create-booking").addEventListener("click", () => {
+        openBookingModal();
+    });
+
+    // Пагинация
+    $("#prev-page").addEventListener("click", async () => {
+        if (state.bookingPage > 1) {
+            state.bookingPage--;
+            await refreshCurrentPage();
+        }
+    });
+
+    $("#next-page").addEventListener("click", async () => {
+        if (state.bookingPage < state.bookingPages) {
+            state.bookingPage++;
+            await refreshCurrentPage();
+        }
+    });
+
+    // Просмотр деталей
+    root.querySelectorAll("[data-booking-details]").forEach(button => {
+        button.addEventListener("click", () => {
+            const booking = state.bookings.find(
+                item => item.id === button.dataset.bookingDetails
+            );
+
+            if (booking) {
+                openBookingDetails(booking);
+            }
+        });
+    });
+
+    // Подтверждение бронирования
+    root.querySelectorAll("[data-approve-booking]").forEach(button => {
+        button.addEventListener("click", async () => {
+            await updateBookingStatus(
+                button.dataset.approveBooking,
+                "approved",
+                button
+            );
+        });
+    });
+
+    // Отмена бронирования
+    root.querySelectorAll("[data-cancel-booking]").forEach(button => {
+        button.addEventListener("click", async () => {
+            await updateBookingStatus(
+                button.dataset.cancelBooking,
+                "cancel",
+                button
+            );
+        });
+    });
+}
+
+async function updateBookingStatus(id, status, button) {
+    if (!requireSupervisor()) return;
+
+    if (!["approved", "cancel"].includes(status)) {
+        toast("Недопустимый статус бронирования.");
+        return;
+    }
+
+    const action = status === "approved"
+        ? "подтвердить"
+        : "отменить";
+
+    if (!confirm(`Вы уверены, что хотите ${action} бронирование?`)) {
+        return;
+    }
+
+    button.disabled = true;
+
+    try {
+        await api.updateBooking(id, { status });
+
+        toast(
+            status === "approved"
+                ? "Бронирование подтверждено."
+                : "Бронирование отменено."
+        );
+
+        await renderCurrentPage();
+    } catch (error) {
+        toast(`Не удалось обновить бронирование: ${error.message}`);
+        button.disabled = false;
+    }
+}
+
+async function refreshCurrentPage() {
+    try {
+        await renderCurrentPage();
+    } catch (error) {
+        toast(error.message);
+    }
+}
+
+function openBookingDetails(booking) {
+    const participants = (booking.participants || []).map(participant => `
+        <tr>
+            <td>${escapeHtml(participant.user?.username || participant.user_id)}</td>
+            <td>${statusBadge(participant.status)}</td>
+        </tr>
+    `);
+
+    showModal("Детали бронирования", `
+        <p><strong>Переговорная:</strong> ${escapeHtml(
+            booking.meeting_room?.name || "—"
+        )}</p>
+        <p><strong>Начало:</strong> ${escapeHtml(formatDate(booking.starts_at))}</p>
+        <p><strong>Окончание:</strong> ${escapeHtml(formatDate(booking.ends_at))}</p>
+        <p><strong>Статус:</strong> ${statusBadge(booking.status || "pending")}</p>
+        <h3 style="margin-top:20px">Участники</h3>
+        ${tableOrEmpty(["Сотрудник", "Статус"], participants, "Участники не указаны.")}
+        <div class="form-actions">
+            <button class="btn btn-primary" data-close-modal type="button">Закрыть</button>
+        </div>
+    `);
+}
+
+/* -------------------- Создание бронирования -------------------- */
+
+function openBookingModal() {
+    if (!state.rooms.length) {
+        toast("Нет доступных переговорных. Сначала создайте переговорную.");
+        return;
+    }
+
+    if (!state.employees.length) {
+        toast("Не удалось получить список сотрудников.");
+        return;
+    }
+
+    const roomOptions = state.rooms.map(room => `
+        <option value="${escapeHtml(room.id)}">
+            ${escapeHtml(room.name)} · ${room.capacity ?? "?"} мест
+        </option>
+    `).join("");
+
+    const employeeOptions = state.employees.map(employee => `
+        <option value="${escapeHtml(employee.id)}"
+            ${employee.id === API.user.id ? "selected" : ""}>
+            ${escapeHtml(employee.username)}
+        </option>
+    `).join("");
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 30);
+    now.setSeconds(0, 0);
+
+    const startValue = toLocalInputValue(now);
+
+    const end = new Date(now.getTime() + 60 * 60 * 1000);
+    const endValue = toLocalInputValue(end);
+
+    showModal("Новое бронирование", `
+        <form id="booking-form">
+            <div class="field">
+                <label for="room-id">Переговорная</label>
+                <select id="room-id" required>${roomOptions}</select>
+            </div>
+
+            <div class="field">
+                <label for="participant-ids">Участники</label>
+                <select id="participant-ids" multiple required size="5">
+                    ${employeeOptions}
+                </select>
+                <span class="muted small">
+                    Для выбора нескольких сотрудников используйте Cmd на macOS
+                    или Ctrl на Windows.
+                </span>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label for="starts-at">Начало</label>
+                    <input id="starts-at" type="datetime-local"
+                        value="${startValue}" required>
+                </div>
+
+                <div class="field">
+                    <label for="ends-at">Окончание</label>
+                    <input id="ends-at" type="datetime-local"
+                        value="${endValue}" required>
+                </div>
+            </div>
+
+            <div id="booking-form-error"></div>
+
+            <div class="form-actions">
+                <button class="btn btn-plain" data-close-modal type="button">
+                    Отмена
+                </button>
+                <button class="btn btn-primary" type="submit">
+                    Создать бронирование
+                </button>
+            </div>
+        </form>
+    `);
+
+    $("#booking-form").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        const button = form.querySelector('[type="submit"]');
+        const roomId = $("#room-id").value;
+        const participantIds = Array.from(
+            $("#participant-ids").selectedOptions
+        ).map(option => option.value);
+
+        const startsAt = new Date($("#starts-at").value);
+        const endsAt = new Date($("#ends-at").value);
+
+        if (!participantIds.length) {
+            $("#booking-form-error").innerHTML =
+                showError("Выберите хотя бы одного участника.");
+            return;
+        }
+
+        if (
+            Number.isNaN(startsAt.getTime()) ||
+            Number.isNaN(endsAt.getTime()) ||
+            startsAt >= endsAt
+        ) {
+            $("#booking-form-error").innerHTML =
+                showError("Дата окончания должна быть позже даты начала.");
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Создание...";
+
+        try {
+            await api.createBooking({
+                meeting_room_id: roomId,
+                user_ids: participantIds,
+                starts_at: startsAt.toISOString(),
+                ends_at: endsAt.toISOString()
+            });
+
+            closeModal();
+            toast("Бронирование создано.");
+            state.bookingPage = 1;
+            await renderCurrentPage();
+        } catch (error) {
+            $("#booking-form-error").innerHTML = showError(error.message);
+            button.disabled = false;
+            button.textContent = "Создать бронирование";
+        }
+    });
+}
+
+function toLocalInputValue(date) {
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+}
+
+/* -------------------- Переговорные -------------------- */
+
+function renderRooms() {
+    const root = $("#page-content");
+
+    const rows = state.rooms.map(room => {
+        const officeName = room.office?.name
+            || state.offices.find(office => office.id === room.office_id)?.name
+            || "—";
+
+        const actions = isSupervisor() ? `
+            <div class="row-actions">
+                <button class="btn btn-plain" type="button"
+                    data-edit-room="${escapeHtml(room.id)}">Изменить</button>
+                <button class="btn btn-danger" type="button"
+                    data-delete-room="${escapeHtml(room.id)}">Удалить</button>
+            </div>
+        ` : "—";
+
+        return `
+            <tr>
+                <td><strong>${escapeHtml(room.name)}</strong></td>
+                <td>${escapeHtml(officeName)}</td>
+                <td>${escapeHtml(room.capacity)}</td>
+                <td>${actions}</td>
+            </tr>
+        `;
+    });
+
+    root.innerHTML = `
+        ${pageHeading(
+            "Переговорные",
+            "Список помещений для проведения встреч.",
+            isSupervisor()
+                ? '<button class="btn btn-primary" id="create-room" type="button">+ Добавить переговорную</button>'
+                : ""
+        )}
+
+        <section class="panel">
+            <div class="panel-header"><h2>Все переговорные</h2></div>
+            ${tableOrEmpty(
+                ["Название", "Офис", "Вместимость", "Действия"],
+                rows,
+                "Переговорные не найдены."
+            )}
+        </section>
+    `;
+
+    $("#create-room")?.addEventListener("click", () => openRoomModal());
+
+    root.querySelectorAll("[data-edit-room]").forEach(button => {
+        button.addEventListener("click", () => {
+            const room = state.rooms.find(item => item.id === button.dataset.editRoom);
+            if (room) openRoomModal(room);
+        });
+    });
+
+    root.querySelectorAll("[data-delete-room]").forEach(button => {
+        button.addEventListener("click", () => deleteRoom(button.dataset.deleteRoom));
+    });
+}
+
+function openRoomModal(room = null) {
+    if (!requireSupervisor()) return;
+
+    if (!state.offices.length) {
+        toast("Сначала создайте хотя бы один офис.");
+        return;
+    }
+
+    showModal(room ? "Редактирование переговорной" : "Новая переговорная", `
+        <form id="room-form">
+            <div class="field">
+                <label for="room-name">Название</label>
+                <input id="room-name" required maxlength="255"
+                    value="${escapeHtml(room?.name || "")}">
+            </div>
+
+            <div class="field">
+                <label for="room-office">Офис</label>
+                <select id="room-office" required>
+                    ${state.offices.map(office => `
+                        <option value="${escapeHtml(office.id)}"
+                            ${office.id === room?.office_id ? "selected" : ""}>
+                            ${escapeHtml(office.name)}
+                        </option>
+                    `).join("")}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="room-capacity">Вместимость</label>
+                <input id="room-capacity" type="number" min="1" max="1000"
+                    required value="${escapeHtml(room?.capacity ?? 6)}">
+            </div>
+
+            <div id="room-form-error"></div>
+
+            <div class="form-actions">
+                <button class="btn btn-plain" data-close-modal type="button">Отмена</button>
+                <button class="btn btn-primary" type="submit">Сохранить</button>
+            </div>
+        </form>
+    `);
+
+    $("#room-form").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const button = event.currentTarget.querySelector('[type="submit"]');
+        button.disabled = true;
+
+        const data = {
+            name: $("#room-name").value.trim(),
+            office_id: $("#room-office").value,
+            capacity: Number($("#room-capacity").value)
+        };
+
+        try {
+            if (room) {
+                await api.updateRoom(room.id, data);
+            } else {
+                await api.createRoom(data);
+            }
+
+            closeModal();
+            toast("Переговорная сохранена.");
+            await renderCurrentPage();
+        } catch (error) {
+            $("#room-form-error").innerHTML = showError(error.message);
+            button.disabled = false;
+        }
+    });
+}
+
+async function deleteRoom(id) {
+    if (!requireSupervisor()) return;
+    if (!confirm("Удалить переговорную?")) return;
+
+    try {
+        await api.deleteRoom(id);
+        toast("Переговорная удалена.");
+        await renderCurrentPage();
+    } catch (error) {
+        toast(error.message);
+    }
+}
+
+/* -------------------- Офисы -------------------- */
+
+function renderOffices() {
+    const root = $("#page-content");
+
+    const rows = state.offices.map(office => `
+        <tr>
+            <td><strong>${escapeHtml(office.name)}</strong></td>
+            <td>${escapeHtml(formatTime(office.work_start))}</td>
+            <td>${escapeHtml(formatTime(office.work_end))}</td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn btn-plain" type="button"
+                        data-edit-office="${escapeHtml(office.id)}">Изменить</button>
+                    <button class="btn btn-danger" type="button"
+                        data-delete-office="${escapeHtml(office.id)}">Удалить</button>
+                </div>
+            </td>
+        </tr>
+    `);
+
+    root.innerHTML = `
+        ${pageHeading(
+            "Офисы",
+            "Управление офисами и рабочим временем.",
+            '<button class="btn btn-primary" id="create-office" type="button">+ Добавить офис</button>'
+        )}
+
+        <section class="panel">
+            <div class="panel-header"><h2>Список офисов</h2></div>
+            ${tableOrEmpty(
+                ["Название", "Начало работы", "Окончание работы", "Действия"],
+                rows,
+                "Офисы не найдены."
+            )}
+        </section>
+    `;
+
+    $("#create-office").addEventListener("click", () => openOfficeModal());
+
+    root.querySelectorAll("[data-edit-office]").forEach(button => {
+        button.addEventListener("click", () => {
+            const office = state.offices.find(
+                item => item.id === button.dataset.editOffice
+            );
+            if (office) openOfficeModal(office);
+        });
+    });
+
+    root.querySelectorAll("[data-delete-office]").forEach(button => {
+        button.addEventListener("click", () => deleteOffice(button.dataset.deleteOffice));
+    });
+}
+
+function openOfficeModal(office = null) {
+    if (!requireSupervisor()) return;
+
+    showModal(office ? "Редактирование офиса" : "Новый офис", `
+        <form id="office-form">
+            <div class="field">
+                <label for="office-name">Название</label>
+                <input id="office-name" required maxlength="255"
+                    value="${escapeHtml(office?.name || "")}">
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label for="office-start">Начало работы</label>
+                    <input id="office-start" type="time" required
+                        value="${escapeHtml(formatTime(office?.work_start) === "—" ? "09:00" : formatTime(office.work_start))}">
+                </div>
+                <div class="field">
+                    <label for="office-end">Окончание работы</label>
+                    <input id="office-end" type="time" required
+                        value="${escapeHtml(formatTime(office?.work_end) === "—" ? "18:00" : formatTime(office.work_end))}">
+                </div>
+            </div>
+
+            <div id="office-form-error"></div>
+
+            <div class="form-actions">
+                <button class="btn btn-plain" data-close-modal type="button">Отмена</button>
+                <button class="btn btn-primary" type="submit">Сохранить</button>
+            </div>
+        </form>
+    `);
+
+    $("#office-form").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const button = event.currentTarget.querySelector('[type="submit"]');
+        button.disabled = true;
+
+        const data = {
+            name: $("#office-name").value.trim(),
+            work_start: $("#office-start").value,
+            work_end: $("#office-end").value
+        };
+
+        try {
+            if (office) {
+                await api.updateOffice(office.id, data);
+            } else {
+                await api.createOffice(data);
+            }
+
+            closeModal();
+            toast("Офис сохранён.");
+            await renderCurrentPage();
+        } catch (error) {
+            $("#office-form-error").innerHTML = showError(error.message);
+            button.disabled = false;
+        }
+    });
+}
+
+async function deleteOffice(id) {
+    if (!requireSupervisor()) return;
+    if (!confirm("Удалить офис?")) return;
+
+    try {
+        await api.deleteOffice(id);
+        toast("Офис удалён.");
+        await renderCurrentPage();
+    } catch (error) {
+        toast(error.message);
+    }
+}
+
+/* -------------------- Сотрудники -------------------- */
+
+function renderEmployees() {
+    const root = $("#page-content");
+
+    const rows = state.employees.map(employee => `
+        <tr>
+            <td><strong>${escapeHtml(employee.username)}</strong></td>
+            <td>${escapeHtml(employee.id)}</td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn btn-danger" type="button"
+                        data-delete-employee="${escapeHtml(employee.id)}">
+                        Удалить
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `);
+
+    root.innerHTML = `
+        ${pageHeading(
+            "Сотрудники",
+            "Управление учётными записями сотрудников."
+        )}
+
+        ${showInfo(
+            "Создание учётной записи выполняется через регистрацию. " +
+            "Для безопасности назначение роли должно контролироваться сервером."
+        )}
+
+        <section class="panel">
+            <div class="panel-header"><h2>Список сотрудников</h2></div>
+            ${tableOrEmpty(
+                ["Имя пользователя", "ID", "Действия"],
+                rows,
+                "Сотрудники не найдены."
+            )}
+        </section>
+    `;
+
+    root.querySelectorAll("[data-delete-employee]").forEach(button => {
+        button.addEventListener("click", () => {
+            deleteEmployee(button.dataset.deleteEmployee);
+        });
+    });
+}
+
+async function deleteEmployee(id) {
+    if (!requireSupervisor()) return;
+    if (id === API.user.id) {
+        toast("Нельзя удалить собственную учётную запись из этого интерфейса.");
+        return;
+    }
+    if (!confirm("Удалить сотрудника?")) return;
+
+    try {
+        await api.deleteEmployee(id);
+        toast("Сотрудник удалён.");
+        await renderCurrentPage();
+    } catch (error) {
+        toast(error.message);
+    }
+}
+
+/* -------------------- Модальные окна -------------------- */
+
+function showModal(title, content) {
+    $("#modal-root").innerHTML = `
+        <div class="modal-backdrop" id="modal-backdrop">
+            <section class="modal" role="dialog" aria-modal="true"
+                aria-labelledby="modal-title">
+                <header class="modal-header">
+                    <h2 id="modal-title">${escapeHtml(title)}</h2>
+                    <button class="close-btn" type="button" data-close-modal
+                        aria-label="Закрыть">✕</button>
+                </header>
+                ${content}
+            </section>
+        </div>
+    `;
+
+    $("#modal-root").querySelectorAll("[data-close-modal]").forEach(button => {
+        button.addEventListener("click", closeModal);
+    });
+
+    $("#modal-backdrop").addEventListener("click", event => {
+        if (event.target.id === "modal-backdrop") closeModal();
+    });
+}
+
+function closeModal() {
+    $("#modal-root").innerHTML = "";
+}
+
+/* -------------------- Запуск -------------------- */
+
+async function startApplication() {
+    if (!API.user) {
+        renderLogin();
+        return;
+    }
+
+    if (!["supervisor", "subordinate", "admin"].includes(API.user.role)) {
+        API.token = null;
+        API.user = null;
+        localStorage.removeItem("meetly_token");
+        renderLogin("Сервер вернул неизвестную роль пользователя.");
+        return;
+    }
+
+    if (
+        !isSupervisor() &&
+        ["offices", "employees"].includes(state.page)
+    ) {
+        state.page = "dashboard";
+    }
+
+    renderShell();
+    await renderCurrentPage();
+}
+
+async function bootstrap() {
+    if (!API.token) {
+        renderLogin();
+        return;
+    }
+
+    try {
+        API.user = await api.me();
+        await startApplication();
+    } catch (error) {
+        if (API.token) {
+            API.token = null;
+            API.user = null;
+            localStorage.removeItem("meetly_token");
+        }
+
+        renderLogin(error.message);
+    }
+}
+
+bootstrap();
+</script>
+</body>
+</html>

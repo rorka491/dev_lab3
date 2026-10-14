@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import apaginate
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 from src.enums import BookingStatus
 from src.models.booking import Booking
 from src.repositories.sqlalchemy.base import BaseSQLAlchemyRepository
@@ -54,7 +55,7 @@ class BookingRepository(BaseSQLAlchemyRepository[Booking]):
 
 
     async def paginate(self, status: BookingStatus | None=None) -> Page[BookingSchema]:
-        query = select(self.model)
+        query = self._get_query(options=[selectinload(self.model.participants)])
         if status is not None:
             query = query.where(Booking.status == status)
         query = query.order_by(Booking.created_at, Booking.id)
@@ -71,4 +72,6 @@ class BookingRepository(BaseSQLAlchemyRepository[Booking]):
             .values(status=BookingStatus.CANCEL)
         )
         await self.session.execute(stmt)
+        await self.session.commit()
+
 

@@ -46,7 +46,7 @@ class BaseSQLAlchemyRepository[M: Base]:
     async def get_or_raise(self, id: uuid.UUID) -> M:
         obj = await self.session.get(self.model, id)
         if obj is None:
-            raise ObjectNotFound(f"{obj.__class__} not found")
+            raise ObjectNotFound(f"{self.model.__name__} not found")
         return obj
 
 

@@ -6,9 +6,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models.base import Base
 from src.enums import BookingStatus
 
+
 if TYPE_CHECKING:
     from src.models.meeting_room import MeetingRoom
     from src.models.user import User
+    from src.models.participant import Participant
 
 class Booking(Base):
     __tablename__ = "bookings"
@@ -38,3 +40,4 @@ class Booking(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False
     )
+    participants: Mapped[list["Participant"]] = relationship("Participant")

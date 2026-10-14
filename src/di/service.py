@@ -23,6 +23,7 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def booking_service(
         self,
-        repo: BookingRepository
+        repo: BookingRepository,
+        sqlalchemy_transaction: SQLAlchemyTransaction,
     ) -> BookingsService:
-        return BookingsService(repo=repo)
+        return BookingsService(repo=repo, sqlalchemy_transaction=sqlalchemy_transaction)

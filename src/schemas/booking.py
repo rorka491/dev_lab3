@@ -3,14 +3,17 @@ from uuid import UUID
 from pydantic import BaseModel, Field, model_validator
 from src.schemas.meeting_room import MeetingRoomSchema
 from src.schemas.participant import ParticipantSchema
+from src.enums import BookingStatus
 
 class BookingSchema(BaseModel):
     id: UUID
-    meetingroom_id: UUID
+    meeting_room_id: UUID
     meeting_room: MeetingRoomSchema | None
     participants: list[ParticipantSchema]
     starts_at: datetime
     ends_at: datetime
+    status: BookingStatus
+
 
 
 class BookingCreateSchema(BaseModel):
@@ -36,3 +39,7 @@ class BookingCreateSchema(BaseModel):
             )
 
         return self
+
+
+class BookingUpdateSchema(BaseModel):
+    status: BookingStatus

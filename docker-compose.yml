@@ -1,0 +1,47 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lab3-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: lab3
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lab3-network
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: lab3-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lab3
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lab3"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lab3-network
+
+volumes:
+  postgres_data:
+
+networks:
+  lab3-network:
+    driver: bridge

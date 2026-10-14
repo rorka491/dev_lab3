@@ -48,7 +48,7 @@ def run_migrations_offline() -> None:
     """
     config.set_main_option(
         "sqlalchemy.url",
-        settings.POSTGRES_URL,
+        settings._postgres_url,
     )
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -91,7 +91,7 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     config.set_main_option(
         "sqlalchemy.url",
-        settings.POSTGRES_URL,
+        settings._postgres_url,
     )
     asyncio.run(run_async_migrations())
 
